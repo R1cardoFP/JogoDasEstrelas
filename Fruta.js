@@ -1,4 +1,4 @@
-class Estrela {
+class Fruta {
 	constructor(imagem, larguraCanvas, alturaCanvas) {
 		this.imagem = imagem;
 		this.larguraCanvas = larguraCanvas;

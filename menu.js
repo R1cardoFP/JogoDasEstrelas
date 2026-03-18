@@ -2,10 +2,12 @@ class Menu {
   constructor(largura, altura) {
     this.largura = largura;
     this.altura = altura;
+    this.instrucoes = new Instrucoes(largura, altura);
     this.ativo = true;
     this.estado = 'principal';
     this.botaoIniciar = { x: largura / 2, y: altura / 2 - 50, largura: 200, altura: 50 };
     this.botaoInstrucoes = { x: largura / 2, y: altura / 2 + 50, largura: 200, altura: 50 };
+    this.botaoIniciarInstrucoes = { x: largura / 2, y: altura - 170, largura: 200, altura: 50 };
     this.botaoVoltar = { x: largura / 2, y: altura - 100, largura: 150, altura: 40 };
     this.tempoIniciar = 0;
     this.tempoInstrucoes = 0;
@@ -16,53 +18,46 @@ class Menu {
   atualizar(hands) {
     if (!this.ativo) return;
 
-    for (let hand of hands) {
-      const dedo = hand.index_finger_tip;
-      const x = this.largura - dedo.x;
-      const y = dedo.y;
+    for (const hand of hands) {
+      if (!hand.index_finger_tip) {
+        continue;
+      }
+
+      const x = this.largura - hand.index_finger_tip.x;
+      const y = hand.index_finger_tip.y;
 
       if (this.estado === 'principal') {
-        if (this.estaSobre(x, y, this.botaoIniciar)) {
-          this.tempoIniciar += deltaTime / 1000;
-          if (this.tempoIniciar >= 3) {
-            this.selecionado = 'iniciar';
-            this.ativo = false;
-          }
-        } else {
-          this.tempoIniciar = 0;
+        if (this.atualizarBotao(x, y, this.botaoIniciar, 'tempoIniciar')) {
+          this.selecionado = 'iniciar';
+          this.ativo = false;
         }
 
-        if (this.estaSobre(x, y, this.botaoInstrucoes)) {
-          this.tempoInstrucoes += deltaTime / 1000;
-          if (this.tempoInstrucoes >= 3) {
-            this.estado = 'instrucoes';
-            this.tempoInstrucoes = 0;
-          }
-        } else {
+        if (this.atualizarBotao(x, y, this.botaoInstrucoes, 'tempoInstrucoes')) {
+          this.estado = 'instrucoes';
           this.tempoInstrucoes = 0;
         }
       } else if (this.estado === 'instrucoes') {
-        if (this.estaSobre(x, y, this.botaoIniciar)) {
-          this.tempoIniciar += deltaTime / 1000;
-          if (this.tempoIniciar >= 3) {
-            this.selecionado = 'iniciar';
-            this.ativo = false;
-          }
-        } else {
-          this.tempoIniciar = 0;
+        if (this.atualizarBotao(x, y, this.botaoIniciarInstrucoes, 'tempoIniciar')) {
+          this.selecionado = 'iniciar';
+          this.ativo = false;
         }
 
-        if (this.estaSobre(x, y, this.botaoVoltar)) {
-          this.tempoVoltar += deltaTime / 1000;
-          if (this.tempoVoltar >= 3) {
-            this.estado = 'principal';
-            this.tempoVoltar = 0;
-          }
-        } else {
+        if (this.atualizarBotao(x, y, this.botaoVoltar, 'tempoVoltar')) {
+          this.estado = 'principal';
           this.tempoVoltar = 0;
         }
       }
     }
+  }
+
+  atualizarBotao(x, y, botao, nomeTempo) {
+    if (this.estaSobre(x, y, botao)) {
+      this[nomeTempo] += deltaTime / 1000;
+      return this[nomeTempo] >= 3;
+    }
+
+    this[nomeTempo] = 0;
+    return false;
   }
 
   estaSobre(x, y, botao) {
@@ -75,25 +70,25 @@ class Menu {
 
     fill(255);
     textAlign(CENTER, CENTER);
-    textSize(32);
-    text('Medicatch', this.largura / 2, this.altura / 4);
 
     if (this.estado === 'principal') {
+      textSize(32);
+      text('Medicatch', this.largura / 2, this.altura / 4);
+
       this.desenharBotao(this.botaoIniciar, 'Iniciar', this.tempoIniciar);
       this.desenharBotao(this.botaoInstrucoes, 'Instruções', this.tempoInstrucoes);
+
+      textSize(16);
+      text('Aponte o dedo indicador para o botão por 3 segundos', this.largura / 2, this.altura - 50);
     } else if (this.estado === 'instrucoes') {
-      textSize(24);
-      text('Instruções:', this.largura / 2, this.altura / 2 - 100);
-      textSize(18);
-      text('Coloque as estrelas na cesta usando a mão.', this.largura / 2, this.altura / 2 - 50);
+      this.instrucoes.desenhar();
 
-      this.desenharBotao(this.botaoIniciar, 'Iniciar', this.tempoIniciar);
+      this.desenharBotao(this.botaoIniciarInstrucoes, 'Iniciar', this.tempoIniciar);
       this.desenharBotao(this.botaoVoltar, 'Voltar', this.tempoVoltar);
-    }
 
-    fill(255);
-    textSize(16);
-    text('Aponte o dedo indicador para o botão por 3 segundos', this.largura / 2, this.altura - 50);
+      textSize(16);
+      text('Aponte o dedo indicador para o botão por 3 segundos', this.largura / 2, this.altura - 35);
+    }
   }
 
   desenharBotao(botao, texto, tempo) {
