@@ -114,7 +114,7 @@ class Menu {
       text('Medicatch', this.largura / 2, this.tituloPrincipalY);
       fill(220);
       textSize(17);
-      text('Apanha estrelas com a tua mão', this.largura / 2, this.subtituloPrincipalY);
+      text('Apanha frutas com a tua mão', this.largura / 2, this.subtituloPrincipalY);
 
       this.desenharBotao(this.botaoIniciar, 'Iniciar', this.tempoIniciar);
       this.desenharBotao(this.botaoInstrucoes, 'Instruções', this.tempoInstrucoes);
