@@ -11,6 +11,7 @@ let frutaImg;
 let frutas = [];
 let frutaAgarrada = null;
 let menu;
+let somScore;
 
 // --- estado de jogo
 let pontos = 0;
@@ -60,6 +61,7 @@ function preload() {
   // --- carrega imagens e modelo de detecao da mao
   cestoImg = loadImage('assets/cesto.png');
   frutaImg = loadImage('assets/estrela.png');
+  somScore = loadSound('assets/som/score.mp3');
   handPose = ml5.handPose({ maxHands: 2, flipped: false });
 }
 
@@ -226,6 +228,9 @@ function draw() {
         if (entrouNoCesto) {
           // --- ao entrar no cesto, soma ponto e reinicia a fruta
           pontos++;
+          if (somScore) {
+            somScore.play();
+          }
           if (frutaAgarrada === frutaAtual) {
             frutaAgarrada = null;
           }
@@ -247,12 +252,38 @@ function draw() {
       frutas[i].desenhar();
     }
 
-    // --- mostra pontuacao e tempo em tempo real
-    fill(255);
-    textAlign(LEFT, TOP);
-    textSize(26);
-    text('Pontuacao: ' + pontos, 20, 20);
-    text('Tempo: ' + ceil(tempoRestanteMs / 1000) + 's', 20, 55);
+    // --- mostra pontuacao e tempo em tempo real com painel de HUD
+    if (!jogoTerminado) {
+      const tempoRestanteSegundos = ceil(tempoRestanteMs / 1000);
+      const hudX = 18;
+      const hudY = 14;
+      const hudLargura = 220;
+      const hudAltura = 92;
+
+      rectMode(CORNER);
+      noStroke();
+      fill(15, 18, 24, 165);
+      rect(hudX, hudY, hudLargura, hudAltura, 12);
+
+      fill(255, 170, 90);
+      rect(hudX + 10, hudY + 12, 5, hudAltura - 24, 3);
+
+      textAlign(LEFT, TOP);
+      textStyle(NORMAL);
+      fill(215);
+      textSize(15);
+      text('Pontuação', hudX + 24, hudY + 12);
+      fill(255);
+      textSize(30);
+      text(pontos, hudX + 24, hudY + 30);
+
+      fill(215);
+      textSize(15);
+      text('Tempo', hudX + 120, hudY + 12);
+      fill(255);
+      textSize(30);
+      text(tempoRestanteSegundos + 's', hudX + 120, hudY + 30);
+    }
 
     // --- desenha a luva/pontos da mao por cima do video durante o jogo
     if (!jogoTerminado) {
@@ -283,16 +314,25 @@ function draw() {
       }
 
       // --- ecran final ao terminar o tempo
-      fill(0, 170);
+      fill(0, 155);
       rectMode(CORNER);
       rect(0, 0, width, height);
+
+      rectMode(CENTER);
+      noStroke();
+      fill(20, 20, 20, 190);
+      rect(width / 2, height / 2 + 20, 660, 400, 24);
+      stroke(255, 100);
+      strokeWeight(1);
+      noFill();
+      rect(width / 2, height / 2 + 20, 660, 400, 24);
 
       fill(255);
       textAlign(CENTER, CENTER);
       textSize(44);
-      text('Tempo terminado', width / 2, height / 2 - 60);
+      text('Tempo esgotado', width / 2, height / 2 - 95);
       textSize(30);
-      text('Pontuacao final: ' + pontos, width / 2, height / 2);
+      text('Pontuação final: ' + pontos, width / 2, height / 2 - 35);
 
       let desempenho = 'Fraco';
       if (pontos >= 12) {
@@ -304,29 +344,31 @@ function draw() {
       }
 
       textSize(26);
-      text('Desempenho: ' + desempenho, width / 2, height / 2 + 40);
+      text('Desempenho: ' + desempenho, width / 2, height / 2 + 10);
 
       const progresso = tempoRepetir / TEMPO_HOVER_REPETIR;
-      fill(255);
+      noStroke();
+      fill(255, 230);
       rectMode(CENTER);
-      rect(botaoRepetir.x, botaoRepetir.y, botaoRepetir.largura, botaoRepetir.altura);
+      rect(botaoRepetir.x, botaoRepetir.y, botaoRepetir.largura, botaoRepetir.altura, 14);
       if (progresso > 0) {
-        fill(0, 255, 0);
+        fill(40, 170, 120, 150);
         rect(
           botaoRepetir.x - botaoRepetir.largura / 2 + (botaoRepetir.largura * progresso) / 2,
           botaoRepetir.y,
           botaoRepetir.largura * progresso,
-          botaoRepetir.altura
+          botaoRepetir.altura,
+          14
         );
       }
 
-      fill(0);
-      textSize(24);
+      fill(35);
+      textSize(22);
       text('Repetir', botaoRepetir.x, botaoRepetir.y);
 
-      fill(255);
-      textSize(22);
-      text('Mantem o dedo no botao por 3 segundos', width / 2, height / 2 + 185);
+      fill(230);
+      textSize(18);
+      text('Mantém o dedo no botão durante 3 segundos', width / 2, botaoRepetir.y + 74);
 
       // --- desenha a mao por cima do ecran final para facilitar o hover
       for (let i = 0; i < hands.length && i < 2; i++) {

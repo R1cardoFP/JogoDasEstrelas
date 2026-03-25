@@ -15,8 +15,33 @@ class Menu {
     this.selecionado = null;
   }
 
+  atualizarLayout() {
+    const centroX = this.largura / 2;
+    const centroY = this.altura / 2;
+
+    this.painelPrincipal = {
+      x: centroX,
+      y: centroY,
+      largura: 440,
+      altura: 340,
+      raio: 20,
+    };
+
+    this.tituloPrincipalY = this.painelPrincipal.y - 120;
+    this.subtituloPrincipalY = this.tituloPrincipalY + 40;
+    this.botaoIniciar = { x: centroX, y: this.painelPrincipal.y - 12, largura: 200, altura: 50 };
+    this.botaoInstrucoes = { x: centroX, y: this.painelPrincipal.y + 78, largura: 200, altura: 50 };
+    this.hintPrincipalY = this.altura - 44;
+
+    this.botaoIniciarInstrucoes = { x: centroX, y: this.altura - 158, largura: 200, altura: 50 };
+    this.botaoVoltar = { x: centroX, y: this.altura - 92, largura: 150, altura: 40 };
+    this.hintInstrucoesY = this.altura - 44;
+  }
+
   atualizar(hands) {
     if (!this.ativo) return;
+
+    this.atualizarLayout();
 
     for (const hand of hands) {
       if (!hand.index_finger_tip) {
@@ -68,40 +93,72 @@ class Menu {
   desenhar() {
     if (!this.ativo) return;
 
-    fill(255);
+    this.atualizarLayout();
+
     textAlign(CENTER, CENTER);
+    textStyle(NORMAL);
 
     if (this.estado === 'principal') {
-      textSize(32);
-      text('Medicatch', this.largura / 2, this.altura / 4);
+      rectMode(CENTER);
+      noStroke();
+      fill(20, 20, 20, 165);
+      rect(this.painelPrincipal.x, this.painelPrincipal.y, this.painelPrincipal.largura, this.painelPrincipal.altura, this.painelPrincipal.raio);
+      stroke(255, 100);
+      strokeWeight(1);
+      noFill();
+      rect(this.painelPrincipal.x, this.painelPrincipal.y, this.painelPrincipal.largura, this.painelPrincipal.altura, this.painelPrincipal.raio);
+      noStroke();
+
+      fill(255);
+      textSize(40);
+      text('Medicatch', this.largura / 2, this.tituloPrincipalY);
+      fill(220);
+      textSize(17);
+      text('Apanha estrelas com a tua mão', this.largura / 2, this.subtituloPrincipalY);
 
       this.desenharBotao(this.botaoIniciar, 'Iniciar', this.tempoIniciar);
       this.desenharBotao(this.botaoInstrucoes, 'Instruções', this.tempoInstrucoes);
 
+      fill(0, 120);
+      rect(this.largura / 2, this.hintPrincipalY, 500, 34, 8);
+      fill(235);
       textSize(16);
-      text('Aponte o dedo indicador para o botão por 3 segundos', this.largura / 2, this.altura - 50);
+      text('Aponte o dedo indicador para o botão durante 3 segundos', this.largura / 2, this.hintPrincipalY);
     } else if (this.estado === 'instrucoes') {
       this.instrucoes.desenhar();
 
       this.desenharBotao(this.botaoIniciarInstrucoes, 'Iniciar', this.tempoIniciar);
       this.desenharBotao(this.botaoVoltar, 'Voltar', this.tempoVoltar);
 
+      fill(0, 120);
+      rect(this.largura / 2, this.hintInstrucoesY, 500, 34, 8);
+      fill(235);
       textSize(16);
-      text('Aponte o dedo indicador para o botão por 3 segundos', this.largura / 2, this.altura - 35);
+      text('Aponte o dedo indicador para o botão durante 3 segundos', this.largura / 2, this.hintInstrucoesY);
     }
   }
 
   desenharBotao(botao, texto, tempo) {
-    const progresso = tempo / 3;
-    fill(255);
+    const progresso = constrain(tempo / 3, 0, 1);
+
     rectMode(CENTER);
-    rect(botao.x, botao.y, botao.largura, botao.altura);
+    stroke(255, 120);
+    strokeWeight(1);
+    fill(255, 230);
+    rect(botao.x, botao.y, botao.largura, botao.altura, 14);
+
     if (progresso > 0) {
-      fill(0, 255, 0);
-      rect(botao.x - botao.largura / 2 + (botao.largura * progresso) / 2, botao.y, botao.largura * progresso, botao.altura);
+      noStroke();
+      fill(40, 170, 120, 150);
+      rect(botao.x - botao.largura / 2 + (botao.largura * progresso) / 2, botao.y, botao.largura * progresso, botao.altura, 14);
     }
-    fill(0);
-    textSize(20);
+
+    noStroke();
+    fill(35);
+    textStyle(BOLD);
+    textSize(19);
     text(texto, botao.x, botao.y);
+    textStyle(NORMAL);
+    noStroke();
   }
 }
